@@ -25,6 +25,13 @@ public:
   // return a degree count for that specific motor.
   int motorFloatToDeg(float pos, int motorID);
 
+  // pos: 0.0-1.0
+  float pos;
+  // dir: 0 (forward) or 1 (reverse)
+  int dir;
+
+  void advance();
+
   // 1: fl
   // 2: fr
   // 3: br
@@ -40,9 +47,11 @@ public:
   void setHip(float);
   void setThigh(float);
   void setKnee(float);
+  void setAll(float);
 
   bool isOnLeftSide();
   bool isInFront();
+
 
 };
 
@@ -94,7 +103,7 @@ int Leg::motorFloatToDeg(float pos, int motorID){
         case 2:
           // FR
           // middle = 70
-          deg = posOfRange(1.0 - pos, 40., 90.);
+          deg = posOfRange(1.0 - pos, 20., 70.);
           break;
 
         case 3:
@@ -105,7 +114,7 @@ int Leg::motorFloatToDeg(float pos, int motorID){
 
         case 4:
           // BL
-          deg = posOfRange(pos, 40., 90.);
+          deg = posOfRange(pos, 20., 70.);
           break;
       }
 
@@ -118,25 +127,25 @@ int Leg::motorFloatToDeg(float pos, int motorID){
         case 1:
           // FL
           // middle = 120
-          deg = posOfRange(1.0 - pos, 40., 110.);
+          deg = posOfRange(1.0 - pos, 10., 90.);
           break;
 
         case 2:
           // FR
           // middle = 70
-          deg = posOfRange(pos, 10., 110.);
+          deg = posOfRange(pos, 10., 90.);
           break;
 
         case 3:
           // BR
           // middle = 70
-          deg = posOfRange(pos, 10., 110.);
+          deg = posOfRange(pos, 10., 90.);
           break;
 
         case 4:
           // BL
           // middle = 120
-          deg = posOfRange(1.0 - pos, 40., 110.);
+          deg = posOfRange(1.0 - pos, 10., 90.);
           break;
       }
       
@@ -147,7 +156,34 @@ int Leg::motorFloatToDeg(float pos, int motorID){
       // Same for both sides. They are all glued on the same way cuz
       // 0.0 = Straight down (80)
       // 1.0 = Bent back towards inside of knee (140)
-      deg = posOfRange(pos, 60., 140.);
+
+      switch (id) {
+        case 1:
+          // FL
+          // middle = 120
+          deg = posOfRange(1.0 - pos, 80., 150.);
+          break;
+
+        case 2:
+          // FR
+          // middle = 70
+          deg = posOfRange(1.0 - pos, 80., 150.);
+          break;
+
+        case 3:
+          // BR
+          // middle = 70
+          deg = posOfRange(1.0 - pos, 80., 150.);
+          break;
+
+        case 4:
+          // BL
+          // middle = 120
+          deg = posOfRange(1.0 - pos, 80., 150.);
+          break;
+      }
+
+      deg = posOfRange(pos, 80., 150.);
       break;
   }
   return (int) (deg + 0.5);
@@ -173,6 +209,11 @@ void Leg::setKnee(float pos){
   knee.write(motorFloatToDeg(pos, 3));
 }
   
+void Leg::setAll(float pos){
+  setHip(pos);
+  setThigh(pos);
+  setKnee(pos);
+}
   
 void Leg::back(){
   setHip(0.0);
@@ -207,9 +248,6 @@ void Leg::read(){
   Serial.print("\n");
 }
 
-
-
-
 void Leg::setMuscles (int hipPin, int thighPin, int kneePin) { 
   // Set up the motors
   hip.attach(hipPin);
@@ -219,6 +257,28 @@ void Leg::setMuscles (int hipPin, int thighPin, int kneePin) {
   hip.write(100);
   thigh.write(40);
   knee.write(80);
+}
+
+void Leg::advance (){
+  switch (dir) {
+    case 0:
+      if (pos > 0.9) {
+        dir = 1;
+        pos = 0.9;
+      } else {
+        pos += 0.1;
+      }
+      break;
+    case 1:
+      if (pos < 0.1) {
+        dir = 0;
+        pos = 0.1;
+      } else {
+        pos -= 0.1;
+      }
+      break;
+  }
+  setAll(pos);
 }
 
 
@@ -260,13 +320,59 @@ void setup() {
   fr.id = 2;
   bl.id = 4;
   br.id = 3;
-} 
+
+  fl.pos = 1.0;
+  fr.pos = 0.0;
+  bl.pos = 0.0;
+  br.pos = 1.0;
+
+  fl.dir = 1;
+  fr.dir = 0;
+  bl.dir = 0;
+  br.dir = 1;
+
+  fl.down();
+  fr.down();
+  bl.down();
+  br.down();
+}
+
+
+
+// Dir 0 = reverse
+
+int lastUpdate = 0;
+
+void runOnMillis(int ms) {
+  if ((ms - 80) > lastUpdate) {
+    fl.advance();
+    fr.advance();
+    br.advance();
+    bl.advance();
+
+    lastUpdate = ms;
+  }
+
+}
 
 
 void loop() {
 
+  runOnMillis(millis());
 
+
+
+
+  /*
   
+  fl.down();
+
+
+  delay(4000);
+
+  fl.up();
+  delay(4000);
+  */
 
   //fr.straight();
   //bl.straight();
@@ -276,6 +382,7 @@ void loop() {
   //bl.up();
   //br.up();
 
+  /*
   fl.setHip(0.0);
   fr.setHip(0.0);
   bl.setHip(0.0);
@@ -300,6 +407,8 @@ void loop() {
   bl.setHip(1.0);
   br.setHip(1.0);
   delay(3000);
+
+  */
 
   /*
   delay(2000);
