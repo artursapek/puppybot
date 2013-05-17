@@ -6,13 +6,14 @@ using namespace std;
 
 class Leg {
 
+
+//  unsigned long lastTorso, lastThigh, lastKnee;
+public:
+
   Servo hip;
   Servo thigh; 
   Servo knee;
 
-
-//  unsigned long lastTorso, lastThigh, lastKnee;
-public:
   void setMuscles (int, int, int);
   void setPosition(int pos);
   
@@ -161,30 +162,27 @@ int Leg::motorFloatToDeg(float pos, int motorID){
         case 1:
           // FL
           // middle = 120
-          deg = posOfRange(1.0 - pos, 80., 150.);
+          deg = posOfRange(1.0 - pos, 80., 120.);
           break;
 
         case 2:
           // FR
           // middle = 70
-          deg = posOfRange(1.0 - pos, 80., 150.);
+          deg = posOfRange(1.0 - pos, 20., 90.);
           break;
 
         case 3:
           // BR
           // middle = 70
-          deg = posOfRange(1.0 - pos, 80., 150.);
+          deg = posOfRange(1.0 - pos, 20., 90.);
           break;
 
         case 4:
           // BL
           // middle = 120
-          deg = posOfRange(1.0 - pos, 80., 150.);
+          deg = posOfRange(1.0 - pos, 80., 120.);
           break;
       }
-
-      deg = posOfRange(pos, 80., 150.);
-      break;
   }
   return (int) (deg + 0.5);
 }
@@ -262,17 +260,17 @@ void Leg::setMuscles (int hipPin, int thighPin, int kneePin) {
 void Leg::advance (){
   switch (dir) {
     case 0:
-      if (pos > 0.9) {
+      if (pos > 0.7) {
         dir = 1;
-        pos = 0.9;
+        pos = 0.7;
       } else {
         pos += 0.1;
       }
       break;
     case 1:
-      if (pos < 0.1) {
+      if (pos < 0.3) {
         dir = 0;
-        pos = 0.1;
+        pos = 0.3;
       } else {
         pos -= 0.1;
       }
@@ -335,6 +333,10 @@ void setup() {
   fr.down();
   bl.down();
   br.down();
+
+  br.up();
+  fr.up();
+
 }
 
 
@@ -357,133 +359,6 @@ void runOnMillis(int ms) {
 
 
 void loop() {
-
   runOnMillis(millis());
-
-
-
-
-  /*
-  
-  fl.down();
-
-
-  delay(4000);
-
-  fl.up();
-  delay(4000);
-  */
-
-  //fr.straight();
-  //bl.straight();
-  //br.straight();
-
-  //fr.up();
-  //bl.up();
-  //br.up();
-
-  /*
-  fl.setHip(0.0);
-  fr.setHip(0.0);
-  bl.setHip(0.0);
-  br.setHip(0.0);
-
-  fl.setThigh(0.0);
-  fr.setThigh(0.0);
-  bl.setThigh(0.0);
-  br.setThigh(0.0);
-
-  delay(3000);
-
-  fl.setHip(0.5);
-  fr.setHip(0.5);
-  bl.setHip(0.5);
-  br.setHip(0.5);
-
-  delay(3000);
-
-  fl.setHip(1.0);
-  fr.setHip(1.0);
-  bl.setHip(1.0);
-  br.setHip(1.0);
-  delay(3000);
-
-  */
-
-  /*
-  delay(2000);
-
-  fl.setHip(0.0);
-  fr.setHip(0.0);
-  bl.setHip(0.0);
-  br.setHip(0.0);
-
-  delay(2000);
-
-  fl.setHip(1.0);
-  fr.setHip(1.0);
-  bl.setHip(1.0);
-  br.setHip(1.0);
-  */
-
-  /*
-  fl.up();
-  fr.up();
-  bl.up();
-  br.up();
-
-  delay(1000);
-
-  fl.down();
-  fr.down();
-  bl.down();
-  br.down();
-
-  delay(1000);
-  */
-
-
-
-  //myLeg.up();
-//  delay(4000);
-
- // myLeg.down();
-//  delay(4000);
-
-
-  /*
-  
-   knee.write(10);
-   delay(10);
-   
-   thigh.write(100);
-   
-   
-   delay(100);
-   
-   // Shift leg forward  
-   torso.write(20);
-   
-   
-   
-   
-   delay(500);
-   
-   
-   // Knee up
-   
-   knee.write(100);
-   delay(10);
-   thigh.write(10);
-   delay(400);
-   torso.write(100);
-   
-   
-   
-   
-   delay(150);
-   
-   
-   */
 }
 
