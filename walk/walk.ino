@@ -87,6 +87,10 @@ int posOfRange(float pos, float min, float max) {
   return min + (pos * diff) + 0.5;
 }
 
+int posOfRangeReverse(float pos, float max, float min) {
+  float diff = max - min;
+  return max - (pos * diff) + 0.5;
+}
 
 int Leg::motorFloatToDeg(float pos, int motorID){
   float deg;
@@ -104,18 +108,18 @@ int Leg::motorFloatToDeg(float pos, int motorID){
         case 2:
           // FR
           // middle = 70
-          deg = posOfRange(1.0 - pos, 20., 70.);
+          deg = posOfRangeReverse(pos, 100., 50.);
           break;
 
         case 3:
           // BR
           // middle = 70
-          deg = posOfRange(1.0 - pos, 60., 120.);
+          deg = posOfRangeReverse(pos, 140., 80.);
           break;
 
         case 4:
           // BL
-          deg = posOfRange(pos, 20., 70.);
+          deg = posOfRange(pos, 30., 90.);
           break;
       }
 
@@ -128,25 +132,27 @@ int Leg::motorFloatToDeg(float pos, int motorID){
         case 1:
           // FL
           // middle = 120
-          deg = posOfRange(1.0 - pos, 10., 90.);
+          deg = posOfRangeReverse(pos, 90., 40.);
           break;
 
         case 2:
           // FR
           // middle = 70
-          deg = posOfRange(pos, 10., 90.);
+          deg = posOfRange(pos, 10., 60.);
           break;
 
         case 3:
           // BR
           // middle = 70
-          deg = posOfRange(pos, 10., 90.);
+          //deg = posOfRange(pos, 10., 90.);
+          deg = 10;
           break;
 
         case 4:
           // BL
           // middle = 120
-          deg = posOfRange(1.0 - pos, 10., 90.);
+          //deg = posOfRangeReverse(pos, 10., 90.);
+          deg = 90;
           break;
       }
       
@@ -154,33 +160,28 @@ int Leg::motorFloatToDeg(float pos, int motorID){
       break;
     case 3:
       // Knee
-      // Same for both sides. They are all glued on the same way cuz
       // 0.0 = Straight down (80)
       // 1.0 = Bent back towards inside of knee (140)
 
       switch (id) {
         case 1:
           // FL
-          // middle = 120
-          deg = posOfRange(1.0 - pos, 80., 120.);
+          deg = posOfRange(pos, 80., 150.);
           break;
 
         case 2:
           // FR
-          // middle = 70
-          deg = posOfRange(1.0 - pos, 20., 90.);
+          deg = posOfRangeReverse(pos, 100., 30.);
           break;
 
         case 3:
           // BR
-          // middle = 70
-          deg = posOfRange(1.0 - pos, 20., 90.);
+          deg = posOfRange(pos, 90., 120.);
           break;
 
         case 4:
           // BL
-          // middle = 120
-          deg = posOfRange(1.0 - pos, 80., 120.);
+          deg = posOfRangeReverse(pos, 90., 60.);
           break;
       }
   }
@@ -258,7 +259,11 @@ void Leg::setMuscles (int hipPin, int thighPin, int kneePin) {
 }
 
 void Leg::advance (){
+  Serial.println(dir);
+  Serial.println(pos);
+  Serial.println("");
   switch (dir) {
+    // Go up
     case 0:
       if (pos > 0.7) {
         dir = 1;
@@ -266,17 +271,32 @@ void Leg::advance (){
       } else {
         pos += 0.1;
       }
+      setAll(pos);
       break;
+    // Extend knee
     case 1:
-      if (pos < 0.3) {
-        dir = 0;
-        pos = 0.3;
+      if (pos < 0.1) {
+        dir = 2;
+        pos = 0.7;
       } else {
         pos -= 0.1;
       }
+      if (id == 1 || id == 2){
+        setKnee(pos);
+      }
       break;
+    // Go back down
+    case 2:
+      if (pos < 0.1) {
+        dir = 0;
+        pos = 0.1;
+      } else {
+        pos -= 0.1;
+      }
+      setAll(pos);
+      break;
+      
   }
-  setAll(pos);
 }
 
 
@@ -319,24 +339,20 @@ void setup() {
   bl.id = 4;
   br.id = 3;
 
-  fl.pos = 1.0;
+  fl.pos = 0.7;
   fr.pos = 0.0;
   bl.pos = 0.0;
-  br.pos = 1.0;
+  br.pos = 0.7;
 
-  fl.dir = 1;
+  fl.dir = 2;
   fr.dir = 0;
   bl.dir = 0;
-  br.dir = 1;
+  br.dir = 2;
 
   fl.down();
   fr.down();
   bl.down();
   br.down();
-
-  br.up();
-  fr.up();
-
 }
 
 
@@ -346,7 +362,7 @@ void setup() {
 int lastUpdate = 0;
 
 void runOnMillis(int ms) {
-  if ((ms - 80) > lastUpdate) {
+  if ((ms - 30) > lastUpdate) {
     fl.advance();
     fr.advance();
     br.advance();
@@ -359,6 +375,14 @@ void runOnMillis(int ms) {
 
 
 void loop() {
+
+
   runOnMillis(millis());
+  /*
+  fl.down();
+  fr.down();
+  br.down();
+  bl.down();
+  */
 }
 
